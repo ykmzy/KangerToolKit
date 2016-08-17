@@ -35,9 +35,9 @@ namespace KangerToolKit
         private static extern IntPtr MapViewOfFile(
          IntPtr hFileMappingObject,
          UInt32 dwDesiredAccess,
-         UInt32 dwFileOffsetHight,//DWORD dwFileOffsetHigh,
-         UInt32 dwFileOffsetLow,//DWORD dwFileOffsetLow,
-         UInt32 dwNumberOfBytesToMap//SIZE_T dwNumberOfBytesToMap
+         UInt32 dwFileOffsetHight,
+         UInt32 dwFileOffsetLow,
+         UInt32 dwNumberOfBytesToMap
          );
 
         [DllImport("Kernel32.dll", EntryPoint = "UnmapViewOfFile")]
