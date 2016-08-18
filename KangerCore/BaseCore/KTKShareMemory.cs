@@ -16,7 +16,7 @@ namespace KangerCore.BaseCore
     /// <summary>
     /// 共享内存
     /// </summary>
-    class KTKShareMemory
+    class KTKShareMemory: IDisposable
     {
         KTKShareMemory()
         {
@@ -38,6 +38,42 @@ namespace KangerCore.BaseCore
             smAddr = MapViewOfFile(smHandle, FILE_MAP_ALL_ACCESS, 0, 0, 0);
         }
 
+        public void Dispose()
+        {
+            UnmapViewOfFile(smAddr);
+            CloseHandle(smHandle);
+        }
+
+        unsafe public void Refrash()
+        {
+            writeSem.WaitOne();
+            byte[] buffBytes = Encoding.Unicode.GetBytes(buff);
+            fixed(byte* pBuffBytes = buffBytes)
+            {
+                byte* pDst = (byte*)smAddr;
+                byte* psrc = pBuffBytes;
+                for (int i = 0; i < buffBytes.Length; i++)
+                {
+                    *pDst = *psrc;
+                    pDst++;
+                    psrc++;
+                }
+            }
+            writeSem.Release();
+        }
+
+        public string Buffer
+        {
+            get
+            {
+                readSem.WaitOne();
+                buff = Marshal.PtrToStringAuto(smAddr);
+                readSem.Release();
+                return buff;
+            }
+        }
+        string buff;
+
         public static KTKShareMemory Instance
         {
             get
@@ -49,13 +85,11 @@ namespace KangerCore.BaseCore
         }
         private static KTKShareMemory instance;
 
-
-
         Semaphore   writeSem;           //可写的信号
         Semaphore   readSem;            //可读的信号
         IntPtr      smHandle;           //文件句柄
         IntPtr      smAddr;             //共享内存地址
-        uint        smLength = 1024;    //共享内存长
+        uint        smLength = 1024*1024;    //共享内存长
 
         const string WRITESEMNAME = "ktkWriteSem";
         const string READSEMNAME = "ktkReadSem";
@@ -76,6 +110,6 @@ namespace KangerCore.BaseCore
         private static extern int UnmapViewOfFile(IntPtr lpBaseAddress);
 
         [DllImport("Kernel32.dll", EntryPoint = "CloseHandle")]
-        private static extern int CloseHandle(IntPtr hObject);
+        private static extern int CloseHandle(IntPtr hObject);      
     }
 }

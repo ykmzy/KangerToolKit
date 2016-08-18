@@ -23,11 +23,13 @@ namespace KangerCore
     /// </summary>
     public class KangerToolKit : IDisposable, IKangerToolKit
     {
+        KangerToolKit()
+        {
+        }
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
 
-       
+
     }
 }
